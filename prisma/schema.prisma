@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Meeting {
+  id            String               @id @default(cuid())
+  title         String?
+  date          DateTime             @default(now())
+  transcription String?
+  context       String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  pains         Pain[]
+  todos         Todo[]
+  participants  MeetingParticipant[]
+}
+
+model Participant {
+  id         String               @id @default(cuid())
+  name       String               @unique
+  costCenter String?
+  role       String?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  meetings   MeetingParticipant[]
+}
+
+model MeetingParticipant {
+  id            String      @id @default(cuid())
+  meetingId     String
+  meeting       Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, participantId])
+}
+
+model Pain {
+  id          String     @id @default(cuid())
+  description String
+  meetingId   String
+  meeting     Meeting    @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  solutions   Solution[]
+  todos       Todo[]
+
+  @@index([meetingId])
+}
+
+model Solution {
+  id          String @id @default(cuid())
+  description String
+  painId      String
+  pain        Pain   @relation(fields: [painId], references: [id], onDelete: Cascade)
+}
+
+model Todo {
+  id          String    @id @default(cuid())
+  action      String
+  responsible String?
+  actionOwner String?
+  costCenter  String?
+  account     String?
+  deadline    DateTime?
+  meetingDate DateTime
+  status      String    @default("Pendente")
+  painId      String?
+  pain        Pain?     @relation(fields: [painId], references: [id], onDelete: SetNull)
+  meetingId   String
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([meetingId])
+  @@index([responsible])
+  @@index([costCenter])
+  @@index([meetingDate])
+}
