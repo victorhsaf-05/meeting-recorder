@@ -51,6 +51,9 @@ export function useTodoTable({
         .then((res) => res.json())
         .then((created) => {
           setTodos((prev) => [...prev, { ...newTodo, tempId: created.id }]);
+        })
+        .catch((err) => {
+          console.error('Error adding todo:', err);
         });
       return;
     }
@@ -62,7 +65,9 @@ export function useTodoTable({
     (tempId: string) => {
       setTodos((prev) => prev.filter((t) => t.tempId !== tempId));
       if (mode === 'api') {
-        fetch(`/api/todos/${tempId}`, { method: 'DELETE' });
+        fetch(`/api/todos/${tempId}`, { method: 'DELETE' }).catch((err) => {
+          console.error('Error removing todo:', err);
+        });
       }
     },
     [mode]
@@ -98,6 +103,8 @@ export function useTodoTable({
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+        }).catch((err) => {
+          console.error('Error updating todo:', err);
         });
       }
     },

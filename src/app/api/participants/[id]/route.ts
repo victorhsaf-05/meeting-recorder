@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { apiError } from '@/lib/utils';
+import { handlePrismaError } from '@/lib/utils';
 
 export async function PUT(
   request: NextRequest,
@@ -22,16 +22,7 @@ export async function PUT(
     });
     return NextResponse.json(participant);
   } catch (error: unknown) {
-    if (error instanceof Object && 'code' in error) {
-      const prismaError = error as { code: string };
-      if (prismaError.code === 'P2025') {
-        return apiError('Participante não encontrado', 404);
-      }
-      if (prismaError.code === 'P2002') {
-        return apiError('Participante com este nome já existe', 409, 'DUPLICATE_NAME');
-      }
-    }
-    throw error;
+    return handlePrismaError(error, 'Participante não encontrado');
   }
 }
 
@@ -45,13 +36,6 @@ export async function DELETE(
     await prisma.participant.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    if (
-      error instanceof Object &&
-      'code' in error &&
-      (error as { code: string }).code === 'P2025'
-    ) {
-      return apiError('Participante não encontrado', 404);
-    }
-    throw error;
+    return handlePrismaError(error, 'Participante não encontrado');
   }
 }

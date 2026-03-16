@@ -12,12 +12,16 @@ export async function POST(request: NextRequest) {
     return apiError('meetingId é obrigatório', 400);
   }
 
-  const pain = await prisma.pain.create({
-    data: {
-      description: body.description.trim(),
-      meetingId: body.meetingId,
-    },
-  });
-
-  return NextResponse.json(pain, { status: 201 });
+  try {
+    const pain = await prisma.pain.create({
+      data: {
+        description: body.description.trim(),
+        meetingId: body.meetingId,
+      },
+    });
+    return NextResponse.json(pain, { status: 201 });
+  } catch (error) {
+    console.error('Error creating pain:', error);
+    return apiError('Erro ao criar dor', 500);
+  }
 }

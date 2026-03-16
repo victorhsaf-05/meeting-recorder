@@ -1,29 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { apiError } from '@/lib/utils';
+import { apiError, parseDate } from '@/lib/utils';
 import type { CreateMeetingRequest } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const search = searchParams.get('search');
+  try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
 
-  const where = search
-    ? { transcription: { contains: search, mode: 'insensitive' as const } }
-    : {};
+    const where = search
+      ? { transcription: { contains: search, mode: 'insensitive' as const } }
+      : {};
 
-  const meetings = await prisma.meeting.findMany({
-    where,
-    select: {
-      id: true,
-      title: true,
-      date: true,
-      createdAt: true,
-      _count: { select: { todos: true } },
-    },
-    orderBy: { date: 'desc' },
-  });
+    const meetings = await prisma.meeting.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        date: true,
+        createdAt: true,
+        _count: { select: { todos: true } },
+      },
+      orderBy: { date: 'desc' },
+    });
 
-  return NextResponse.json(meetings);
+    return NextResponse.json(meetings);
+  } catch (error) {
+    console.error('Error fetching meetings:', error);
+    return apiError('Erro ao buscar reuniões', 500);
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -33,45 +38,66 @@ export async function POST(request: NextRequest) {
     return apiError('Transcrição é obrigatória', 400);
   }
 
-  const meeting = await prisma.$transaction(async (tx) => {
-    const meeting = await tx.meeting.create({
-      data: {
-        title: body.title,
-        date: new Date(body.date),
-        transcription: body.transcription,
-        context: body.context,
-      },
-    });
+  try {
+    const meetingDate = parseDate(body.date) ?? new Date();
 
-    if (body.participantIds?.length > 0) {
-      await tx.meetingParticipant.createMany({
-        data: body.participantIds.map((pid) => ({
-          meetingId: meeting.id,
-          participantId: pid,
-        })),
-      });
-    }
-
-    for (const painData of body.pains || []) {
-      const pain = await tx.pain.create({
+    const meeting = await prisma.$transaction(async (tx) => {
+      const meeting = await tx.meeting.create({
         data: {
-          description: painData.description,
-          meetingId: meeting.id,
+          title: body.title,
+          date: meetingDate,
+          transcription: body.transcription,
+          context: body.context,
         },
       });
 
-      if (painData.solutions?.length > 0) {
-        await tx.solution.createMany({
-          data: painData.solutions.map((s) => ({
-            description: s,
-            painId: pain.id,
+      if (body.participantIds?.length > 0) {
+        await tx.meetingParticipant.createMany({
+          data: body.participantIds.map((pid) => ({
+            meetingId: meeting.id,
+            participantId: pid,
           })),
         });
       }
 
-      if (painData.todos?.length > 0) {
+      for (const painData of body.pains || []) {
+        const pain = await tx.pain.create({
+          data: {
+            description: painData.description,
+            meetingId: meeting.id,
+          },
+        });
+
+        if (painData.solutions?.length > 0) {
+          await tx.solution.createMany({
+            data: painData.solutions.map((s) => ({
+              description: s,
+              painId: pain.id,
+            })),
+          });
+        }
+
+        if (painData.todos?.length > 0) {
+          await tx.todo.createMany({
+            data: painData.todos.map((t) => ({
+              action: t.action,
+              responsible: t.responsible || null,
+              actionOwner: t.actionOwner || null,
+              costCenter: t.costCenter || null,
+              account: t.account || null,
+              status: t.status || 'Pendente',
+              meetingId: meeting.id,
+              painId: pain.id,
+              meetingDate: parseDate(t.meetingDate || body.date) ?? meetingDate,
+              deadline: t.deadline ? (parseDate(t.deadline) ?? null) : null,
+            })),
+          });
+        }
+      }
+
+      if (body.orphanTodos?.length) {
         await tx.todo.createMany({
-          data: painData.todos.map((t) => ({
+          data: body.orphanTodos.map((t) => ({
             action: t.action,
             responsible: t.responsible || null,
             actionOwner: t.actionOwner || null,
@@ -79,41 +105,27 @@ export async function POST(request: NextRequest) {
             account: t.account || null,
             status: t.status || 'Pendente',
             meetingId: meeting.id,
-            painId: pain.id,
-            meetingDate: new Date(t.meetingDate || body.date),
-            deadline: t.deadline ? new Date(t.deadline) : null,
+            meetingDate: parseDate(t.meetingDate || body.date) ?? meetingDate,
+            deadline: t.deadline ? (parseDate(t.deadline) ?? null) : null,
           })),
         });
       }
-    }
 
-    if (body.orphanTodos?.length) {
-      await tx.todo.createMany({
-        data: body.orphanTodos.map((t) => ({
-          action: t.action,
-          responsible: t.responsible || null,
-          actionOwner: t.actionOwner || null,
-          costCenter: t.costCenter || null,
-          account: t.account || null,
-          status: t.status || 'Pendente',
-          meetingId: meeting.id,
-          meetingDate: new Date(t.meetingDate || body.date),
-          deadline: t.deadline ? new Date(t.deadline) : null,
-        })),
-      });
-    }
+      return meeting;
+    });
 
-    return meeting;
-  });
+    const full = await prisma.meeting.findUnique({
+      where: { id: meeting.id },
+      include: {
+        pains: { include: { solutions: true } },
+        todos: true,
+        participants: { include: { participant: true } },
+      },
+    });
 
-  const full = await prisma.meeting.findUnique({
-    where: { id: meeting.id },
-    include: {
-      pains: { include: { solutions: true } },
-      todos: true,
-      participants: { include: { participant: true } },
-    },
-  });
-
-  return NextResponse.json(full, { status: 201 });
+    return NextResponse.json(full, { status: 201 });
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+    return apiError('Erro ao criar reunião', 500);
+  }
 }

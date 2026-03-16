@@ -3,10 +3,15 @@ import { prisma } from '@/lib/db';
 import { apiError } from '@/lib/utils';
 
 export async function GET() {
-  const participants = await prisma.participant.findMany({
-    orderBy: { name: 'asc' },
-  });
-  return NextResponse.json(participants);
+  try {
+    const participants = await prisma.participant.findMany({
+      orderBy: { name: 'asc' },
+    });
+    return NextResponse.json(participants);
+  } catch (error) {
+    console.error('Error fetching participants:', error);
+    return apiError('Erro ao buscar participantes', 500);
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -33,6 +38,7 @@ export async function POST(request: NextRequest) {
     ) {
       return apiError('Participante com este nome já existe', 409, 'DUPLICATE_NAME');
     }
-    throw error;
+    console.error('Error creating participant:', error);
+    return apiError('Erro ao criar participante', 500);
   }
 }

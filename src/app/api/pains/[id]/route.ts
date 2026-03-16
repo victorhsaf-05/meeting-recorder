@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { apiError } from '@/lib/utils';
+import { apiError, handlePrismaError } from '@/lib/utils';
 
 export async function PUT(
   request: NextRequest,
@@ -22,14 +22,7 @@ export async function PUT(
     });
     return NextResponse.json(pain);
   } catch (error: unknown) {
-    if (
-      error instanceof Object &&
-      'code' in error &&
-      (error as { code: string }).code === 'P2025'
-    ) {
-      return apiError('Dor não encontrada', 404);
-    }
-    throw error;
+    return handlePrismaError(error, 'Dor não encontrada');
   }
 }
 
@@ -43,13 +36,6 @@ export async function DELETE(
     await prisma.pain.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    if (
-      error instanceof Object &&
-      'code' in error &&
-      (error as { code: string }).code === 'P2025'
-    ) {
-      return apiError('Dor não encontrada', 404);
-    }
-    throw error;
+    return handlePrismaError(error, 'Dor não encontrada');
   }
 }

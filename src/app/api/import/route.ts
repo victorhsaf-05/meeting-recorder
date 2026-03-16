@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { apiError } from '@/lib/utils';
+import { apiError, parseDate } from '@/lib/utils';
 import type { ImportExcelRequest } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
@@ -45,10 +45,11 @@ export async function POST(request: NextRequest) {
       }
 
       // Create meeting
+      const importDate = parseDate(body.date) ?? new Date();
       const meeting = await tx.meeting.create({
         data: {
           title: body.title,
-          date: new Date(body.date),
+          date: importDate,
         },
       });
 
@@ -74,10 +75,8 @@ export async function POST(request: NextRequest) {
             account: t.account || null,
             status: t.status || 'Pendente',
             meetingId: meeting.id,
-            meetingDate: t.meetingDate
-              ? new Date(t.meetingDate)
-              : new Date(body.date),
-            deadline: t.deadline ? new Date(t.deadline) : null,
+            meetingDate: (t.meetingDate ? parseDate(t.meetingDate) : null) ?? importDate,
+            deadline: t.deadline ? (parseDate(t.deadline) ?? null) : null,
           })),
         });
       }

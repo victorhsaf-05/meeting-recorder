@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { apiError } from '@/lib/utils';
+import { apiError, handlePrismaError } from '@/lib/utils';
 
 export async function GET(
   _request: NextRequest,
@@ -8,20 +8,25 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const meeting = await prisma.meeting.findUnique({
-    where: { id },
-    include: {
-      pains: { include: { solutions: true } },
-      todos: { orderBy: { createdAt: 'asc' } },
-      participants: { include: { participant: true } },
-    },
-  });
+  try {
+    const meeting = await prisma.meeting.findUnique({
+      where: { id },
+      include: {
+        pains: { include: { solutions: true } },
+        todos: { orderBy: { createdAt: 'asc' } },
+        participants: { include: { participant: true } },
+      },
+    });
 
-  if (!meeting) {
-    return apiError('Reunião não encontrada', 404);
+    if (!meeting) {
+      return apiError('Reunião não encontrada', 404);
+    }
+
+    return NextResponse.json(meeting);
+  } catch (error) {
+    console.error('Error fetching meeting:', error);
+    return apiError('Erro ao buscar reunião', 500);
   }
-
-  return NextResponse.json(meeting);
 }
 
 export async function PUT(
@@ -41,14 +46,7 @@ export async function PUT(
     });
     return NextResponse.json(meeting);
   } catch (error: unknown) {
-    if (
-      error instanceof Object &&
-      'code' in error &&
-      (error as { code: string }).code === 'P2025'
-    ) {
-      return apiError('Reunião não encontrada', 404);
-    }
-    throw error;
+    return handlePrismaError(error, 'Reunião não encontrada');
   }
 }
 
@@ -62,13 +60,6 @@ export async function DELETE(
     await prisma.meeting.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    if (
-      error instanceof Object &&
-      'code' in error &&
-      (error as { code: string }).code === 'P2025'
-    ) {
-      return apiError('Reunião não encontrada', 404);
-    }
-    throw error;
+    return handlePrismaError(error, 'Reunião não encontrada');
   }
 }

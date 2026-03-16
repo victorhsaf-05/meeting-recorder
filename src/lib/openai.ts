@@ -1,3 +1,4 @@
+import 'server-only';
 import OpenAI from 'openai';
 
 let _openai: OpenAI | null = null;

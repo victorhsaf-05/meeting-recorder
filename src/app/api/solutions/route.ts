@@ -12,12 +12,16 @@ export async function POST(request: NextRequest) {
     return apiError('painId é obrigatório', 400);
   }
 
-  const solution = await prisma.solution.create({
-    data: {
-      description: body.description.trim(),
-      painId: body.painId,
-    },
-  });
-
-  return NextResponse.json(solution, { status: 201 });
+  try {
+    const solution = await prisma.solution.create({
+      data: {
+        description: body.description.trim(),
+        painId: body.painId,
+      },
+    });
+    return NextResponse.json(solution, { status: 201 });
+  } catch (error) {
+    console.error('Error creating solution:', error);
+    return apiError('Erro ao criar solução', 500);
+  }
 }

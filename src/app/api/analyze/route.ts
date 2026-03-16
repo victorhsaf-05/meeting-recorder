@@ -29,12 +29,15 @@ export async function POST(request: NextRequest) {
 
     content = completion.choices[0]?.message?.content ?? null;
   } catch (error: unknown) {
-    const status =
+    console.error('OpenAI error:', error);
+    const statusCode =
       error instanceof Object && 'status' in error
         ? (error as { status: number }).status
         : 500;
-    const message = error instanceof Error ? error.message : 'Erro ao chamar GPT';
-    return apiError(message, status);
+    let message = 'Erro ao analisar transcrição';
+    if (statusCode === 429) message = 'Limite de requisições atingido. Tente novamente em instantes';
+    if (statusCode === 401 || statusCode === 403) message = 'Serviço temporariamente indisponível';
+    return apiError(message, statusCode);
   }
 
   if (!content) {

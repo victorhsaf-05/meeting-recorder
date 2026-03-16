@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { apiError } from '@/lib/utils';
+import { handlePrismaError, parseDate } from '@/lib/utils';
 
 export async function PUT(
   request: NextRequest,
@@ -20,20 +20,13 @@ export async function PUT(
         ...(body.account !== undefined && { account: body.account || null }),
         ...(body.status !== undefined && { status: body.status }),
         ...(body.deadline !== undefined && {
-          deadline: body.deadline ? new Date(body.deadline) : null,
+          deadline: body.deadline ? (parseDate(body.deadline) ?? null) : null,
         }),
       },
     });
     return NextResponse.json(todo);
   } catch (error: unknown) {
-    if (
-      error instanceof Object &&
-      'code' in error &&
-      (error as { code: string }).code === 'P2025'
-    ) {
-      return apiError('To-do não encontrado', 404);
-    }
-    throw error;
+    return handlePrismaError(error, 'To-do não encontrado');
   }
 }
 
@@ -47,13 +40,6 @@ export async function DELETE(
     await prisma.todo.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    if (
-      error instanceof Object &&
-      'code' in error &&
-      (error as { code: string }).code === 'P2025'
-    ) {
-      return apiError('To-do não encontrado', 404);
-    }
-    throw error;
+    return handlePrismaError(error, 'To-do não encontrado');
   }
 }
