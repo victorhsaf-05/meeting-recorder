@@ -71,7 +71,7 @@ export default function MeetingDetailPage() {
   const participants =
     meeting?.participants?.map((mp) => mp.participant) || [];
 
-  const { todos, setTodos, addTodo, removeTodo, updateTodo } = useTodoTable({
+  const { todos, setTodos, addTodo, removeTodo, updateTodo, addTodoForPain } = useTodoTable({
     mode: 'api',
     meetingId: id,
     participants,
@@ -241,10 +241,28 @@ export default function MeetingDetailPage() {
         }
       }
 
+      // Auto-create todo for pain without solutions
+      for (const np of newPains) {
+        const old = prev.find((p) => p.tempId === np.tempId);
+        if (!old) continue;
+        // Only trigger when description was edited (changed and non-empty) and has no solutions
+        if (
+          old.description !== np.description &&
+          np.description.trim() &&
+          np.solutions.length === 0
+        ) {
+          // Check if a todo for this pain already exists
+          const alreadyHasTodo = todos.some((t) => t.painTempId === np.tempId);
+          if (!alreadyHasTodo) {
+            addTodoForPain(np.tempId, np.description);
+          }
+        }
+      }
+
       setPains(newPains);
       prevPainsRef.current = newPains;
     },
-    [id]
+    [id, todos, addTodoForPain]
   );
 
   // Delete meeting

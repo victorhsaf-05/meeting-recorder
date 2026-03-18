@@ -44,7 +44,12 @@ export async function GET(request: NextRequest) {
         where: todosWhere,
         include: {
           meeting: { select: { id: true, title: true } },
-          pain: { select: { description: true } },
+          pain: {
+            select: {
+              description: true,
+              solutions: { select: { description: true } },
+            },
+          },
         },
         orderBy: { meetingDate: 'desc' },
       }),

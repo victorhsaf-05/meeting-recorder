@@ -76,6 +76,7 @@ export interface EditableTodo {
   deadline: string;
   status: TodoStatus;
   painTempId: string | null;
+  meetingDate?: string;
 }
 
 export type WizardStep =

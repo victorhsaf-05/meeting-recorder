@@ -111,5 +111,47 @@ export function useTodoTable({
     [mode, participants]
   );
 
-  return { todos, setTodos, addTodo, removeTodo, updateTodo };
+  const addTodoForPain = useCallback(
+    (painId: string, description: string) => {
+      const action = `Solucionar: ${description}`;
+      const newTodo: EditableTodo = {
+        tempId: generateTempId(),
+        action,
+        responsible: '',
+        actionOwner: '',
+        costCenter: '',
+        account: '',
+        deadline: '',
+        status: 'Pendente',
+        painTempId: painId,
+      };
+
+      if (mode === 'api' && meetingId) {
+        fetch('/api/todos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action,
+            meetingDate,
+            meetingId,
+            status: 'Pendente',
+            painId,
+          }),
+        })
+          .then((res) => res.json())
+          .then((created) => {
+            setTodos((prev) => [...prev, { ...newTodo, tempId: created.id }]);
+          })
+          .catch((err) => {
+            console.error('Error adding todo for pain:', err);
+          });
+        return;
+      }
+
+      setTodos((prev) => [...prev, newTodo]);
+    },
+    [mode, meetingId, meetingDate]
+  );
+
+  return { todos, setTodos, addTodo, removeTodo, updateTodo, addTodoForPain };
 }

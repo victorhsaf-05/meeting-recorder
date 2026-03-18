@@ -16,9 +16,10 @@ interface DashboardFiltersProps {
   onChange: (filters: DashboardFiltersState) => void;
   onApply: () => void;
   onClear: () => void;
+  costCenters?: string[];
 }
 
-export function DashboardFilters({ filters, onChange, onApply, onClear }: DashboardFiltersProps) {
+export function DashboardFilters({ filters, onChange, onApply, onClear, costCenters = [] }: DashboardFiltersProps) {
   const update = (field: keyof DashboardFiltersState, value: string) => {
     onChange({ ...filters, [field]: value });
   };
@@ -44,11 +45,21 @@ export function DashboardFilters({ filters, onChange, onApply, onClear }: Dashbo
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Centro de custo</label>
-          <Input
-            placeholder="Filtrar CC..."
-            value={filters.costCenter}
-            onChange={(e) => update('costCenter', e.target.value)}
-          />
+          <Select
+            value={filters.costCenter || undefined}
+            onValueChange={(v) => v && update('costCenter', v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+              {costCenters.map((cc) => (
+                <SelectItem key={cc} value={cc}>
+                  {cc}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Conta</label>

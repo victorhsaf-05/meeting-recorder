@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -16,9 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Eye } from 'lucide-react';
 import Link from 'next/link';
 import type {
   EditableTodo,
@@ -49,6 +57,11 @@ export interface MeetingLink {
   title: string | null;
 }
 
+export interface PainDetail {
+  description: string;
+  solutions: { description: string }[];
+}
+
 interface TodoTableProps {
   todos: EditableTodo[];
   onUpdateTodo: (
@@ -63,6 +76,8 @@ interface TodoTableProps {
   meetingDate?: string;
   readOnly?: boolean;
   meetingLinks?: Record<string, MeetingLink>;
+  costCenters?: string[];
+  painDetails?: Record<string, PainDetail>;
 }
 
 function formatDate(dateStr: string): string {
@@ -85,10 +100,22 @@ export function TodoTable({
   meetingDate,
   readOnly = false,
   meetingLinks,
+  costCenters: costCentersProp,
+  painDetails,
 }: TodoTableProps) {
+  const [detailTodo, setDetailTodo] = useState<EditableTodo | null>(null);
   const showMeetingCol = !!meetingLinks;
+
+  const costCenters = costCentersProp ??
+    [...new Set(
+      participants
+        .map((p) => p.costCenter)
+        .filter((cc): cc is string => !!cc)
+    )];
+
   const getPainDescription = (painTempId: string | null) => {
     if (!painTempId) return '—';
+    if (painDetails?.[painTempId]) return painDetails[painTempId].description;
     const pain = pains.find((p) => p.tempId === painTempId);
     return pain?.description || '—';
   };
@@ -182,23 +209,31 @@ export function TodoTable({
                   {readOnly ? (
                     <span className="text-sm">{todo.costCenter || '—'}</span>
                   ) : (
-                    <Input
-                      value={todo.costCenter}
-                      onChange={(e) =>
-                        onUpdateTodo(
-                          todo.tempId,
-                          'costCenter',
-                          e.target.value
-                        )
-                      }
-                      placeholder="CC"
-                      className="h-7 text-xs"
-                    />
+                    <>
+                      <Input
+                        list={`cc-${todo.tempId}`}
+                        value={todo.costCenter}
+                        onChange={(e) =>
+                          onUpdateTodo(
+                            todo.tempId,
+                            'costCenter',
+                            e.target.value
+                          )
+                        }
+                        placeholder="CC"
+                        className="h-7 text-xs"
+                      />
+                      <datalist id={`cc-${todo.tempId}`}>
+                        {costCenters.map((cc) => (
+                          <option key={cc} value={cc} />
+                        ))}
+                      </datalist>
+                    </>
                   )}
                 </TableCell>
 
                 <TableCell className="text-sm text-muted-foreground">
-                  {formatDate(meetingDate || '')}
+                  {formatDate(todo.meetingDate || meetingDate || '')}
                 </TableCell>
 
                 <TableCell>
@@ -246,11 +281,22 @@ export function TodoTable({
                   )}
                 </TableCell>
 
-                <TableCell
-                  className="text-sm text-muted-foreground max-w-[150px] truncate"
-                  title={getPainDescription(todo.painTempId)}
-                >
-                  {getPainDescription(todo.painTempId)}
+                <TableCell className="text-sm text-muted-foreground max-w-[150px]">
+                  <div className="flex items-center gap-1">
+                    <span className="truncate" title={getPainDescription(todo.painTempId)}>
+                      {getPainDescription(todo.painTempId)}
+                    </span>
+                    {painDetails && todo.painTempId && painDetails[todo.painTempId] && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="shrink-0 h-5 w-5"
+                        onClick={() => setDetailTodo(todo)}
+                      >
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
 
                 <TableCell>
@@ -319,6 +365,49 @@ export function TodoTable({
           Adicionar To-Do
         </Button>
       )}
+
+      <Dialog open={!!detailTodo} onOpenChange={(open) => !open && setDetailTodo(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalhes do To-Do</DialogTitle>
+          </DialogHeader>
+          {detailTodo && (
+            <div className="space-y-4 text-sm">
+              <div>
+                <span className="font-medium text-muted-foreground">Acao:</span>
+                <p>{detailTodo.action || '—'}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="font-medium text-muted-foreground">Responsavel:</span>
+                  <p>{detailTodo.responsible || '—'}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Status:</span>
+                  <p><Badge variant={STATUS_VARIANT[detailTodo.status]}>{detailTodo.status}</Badge></p>
+                </div>
+              </div>
+              {detailTodo.painTempId && painDetails?.[detailTodo.painTempId] && (
+                <div className="border-t pt-3 space-y-2">
+                  <span className="font-medium text-muted-foreground">Dor relacionada:</span>
+                  <p>{painDetails[detailTodo.painTempId].description}</p>
+                  {painDetails[detailTodo.painTempId].solutions.length > 0 && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">Solucoes:</span>
+                      <ul className="list-disc list-inside mt-1 space-y-1">
+                        {painDetails[detailTodo.painTempId].solutions.map((s, i) => (
+                          <li key={i}>{s.description}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter showCloseButton />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -7,11 +7,13 @@ import { DashboardCounters } from '@/components/DashboardCounters';
 import { DashboardFilters } from '@/components/DashboardFilters';
 import { TodoTable } from '@/components/TodoTable';
 import type { MeetingLink } from '@/components/TodoTable';
+import type { PainDetail } from '@/components/TodoTable';
 import type {
   DashboardFiltersState,
   DashboardCounters as Counters,
   EditableTodo,
   TodoStatus,
+  Participant,
 } from '@/lib/types';
 
 interface DashboardTodo {
@@ -26,7 +28,7 @@ interface DashboardTodo {
   status: string;
   painId: string | null;
   meeting: { id: string; title: string | null };
-  pain: { description: string } | null;
+  pain: { description: string; solutions: { description: string }[] } | null;
 }
 
 const emptyFilters: DashboardFiltersState = {
@@ -49,6 +51,8 @@ export default function DashboardPage() {
   });
   const [todos, setTodos] = useState<EditableTodo[]>([]);
   const [meetingLinks, setMeetingLinks] = useState<Record<string, MeetingLink>>({});
+  const [painDetails, setPainDetails] = useState<Record<string, PainDetail>>({});
+  const [costCenters, setCostCenters] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback((f: DashboardFiltersState) => {
@@ -68,8 +72,15 @@ export default function DashboardPage() {
         setCounters(data.counters);
 
         const links: Record<string, MeetingLink> = {};
+        const pains: Record<string, PainDetail> = {};
         const editableTodos: EditableTodo[] = data.todos.map((t) => {
           links[t.id] = t.meeting;
+          if (t.painId && t.pain) {
+            pains[t.painId] = {
+              description: t.pain.description,
+              solutions: t.pain.solutions || [],
+            };
+          }
           return {
             tempId: t.id,
             action: t.action,
@@ -80,10 +91,12 @@ export default function DashboardPage() {
             deadline: t.deadline ? t.deadline.split('T')[0] : '',
             status: t.status as TodoStatus,
             painTempId: t.painId,
+            meetingDate: t.meetingDate ? t.meetingDate.split('T')[0] : '',
           };
         });
         setTodos(editableTodos);
         setMeetingLinks(links);
+        setPainDetails(pains);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -91,6 +104,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData(emptyFilters);
+    fetch('/api/participants')
+      .then((res) => res.json())
+      .then((data: Participant[]) => {
+        const uniqueCCs = [...new Set(
+          data.map((p) => p.costCenter).filter((cc): cc is string => !!cc)
+        )];
+        setCostCenters(uniqueCCs);
+      })
+      .catch(() => {});
   }, [fetchData]);
 
   const handleApply = useCallback(() => {
@@ -138,6 +160,7 @@ export default function DashboardPage() {
         onChange={setFilters}
         onApply={handleApply}
         onClear={handleClear}
+        costCenters={costCenters}
       />
 
       {loading ? (
@@ -155,6 +178,8 @@ export default function DashboardPage() {
           onRemoveTodo={() => {}}
           readOnly={false}
           meetingLinks={meetingLinks}
+          costCenters={costCenters}
+          painDetails={painDetails}
         />
       )}
     </div>
