@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Header } from "@/components/Header";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import { Sidebar } from "@/components/Sidebar";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const jetbrainsMono = JetBrains_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "MeetingRecorder AI",
-  description: "Grave reuniões, transcreva com IA e gere ações automaticamente",
+  description: "Grave reunioes, transcreva com IA e gere acoes automaticamente",
 };
 
 export default function RootLayout({
@@ -24,13 +24,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <Header />
-        <main className="container mx-auto px-4 py-6">
-          {children}
+        <Sidebar />
+        <main className="lg:pl-56 min-h-screen">
+          <div className="mx-auto max-w-6xl px-6 py-8 pt-16 lg:pt-8">
+            {children}
+          </div>
         </main>
       </body>
     </html>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MeetingCard } from '@/components/MeetingCard';
+import { Mic, Search } from 'lucide-react';
 import type { MeetingListItem } from '@/lib/types';
 
 export default function HomePage() {
@@ -14,7 +15,6 @@ export default function HomePage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -22,7 +22,6 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch meetings
   useEffect(() => {
     const params = debouncedSearch
       ? `?search=${encodeURIComponent(debouncedSearch)}`
@@ -39,39 +38,61 @@ export default function HomePage() {
   }, [debouncedSearch]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Reuniões</h1>
-        <Button onClick={() => router.push('/recording')}>
-          Nova Gravação
+    <div className="space-y-8">
+      {/* Page header */}
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">Reunioes</h1>
+        <p className="text-sm text-muted-foreground">
+          Gerencie suas reunioes e acompanhe acoes.
+        </p>
+      </div>
+
+      {/* Actions bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar reunioes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Button onClick={() => router.push('/recording')} className="shrink-0 gap-2">
+          <Mic className="h-4 w-4" />
+          Nova Gravacao
         </Button>
       </div>
 
-      <Input
-        placeholder="Buscar reuniões..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-
+      {/* Content */}
       {loading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center space-y-2">
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center space-y-3">
             <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="text-sm text-muted-foreground">Carregando reuniões...</p>
+            <p className="text-sm text-muted-foreground">Carregando reunioes...</p>
           </div>
         </div>
       )}
 
       {!loading && meetings.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">
-            {debouncedSearch
-              ? 'Nenhuma reunião encontrada para esta busca.'
-              : 'Nenhuma reunião gravada ainda.'}
-          </p>
+        <div className="flex flex-col items-center justify-center py-16 space-y-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <Mic className="h-6 w-6 text-primary" />
+          </div>
+          <div className="text-center space-y-1">
+            <p className="font-medium">
+              {debouncedSearch ? 'Nenhum resultado' : 'Nenhuma reuniao ainda'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {debouncedSearch
+                ? 'Tente outro termo de busca.'
+                : 'Grave sua primeira reuniao para comecar.'}
+            </p>
+          </div>
           {!debouncedSearch && (
-            <Button variant="outline" onClick={() => router.push('/recording')}>
-              Gravar primeira reunião
+            <Button variant="outline" onClick={() => router.push('/recording')} className="gap-2">
+              <Mic className="h-4 w-4" />
+              Gravar primeira reuniao
             </Button>
           )}
         </div>

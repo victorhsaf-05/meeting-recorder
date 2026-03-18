@@ -20,6 +20,14 @@ import { TodoTable } from '@/components/TodoTable';
 import { ExcelExport } from '@/components/ExcelExport';
 import { sanitizeFilename } from '@/lib/excel';
 import { useTodoTable } from '@/hooks/useTodoTable';
+import {
+  ArrowLeft,
+  Calendar,
+  Trash2,
+  Download,
+  AlertTriangle,
+  ListTodo,
+} from 'lucide-react';
 import type {
   EditablePain,
   EditableTodo,
@@ -245,13 +253,11 @@ export default function MeetingDetailPage() {
       for (const np of newPains) {
         const old = prev.find((p) => p.tempId === np.tempId);
         if (!old) continue;
-        // Only trigger when description was edited (changed and non-empty) and has no solutions
         if (
           old.description !== np.description &&
           np.description.trim() &&
           np.solutions.length === 0
         ) {
-          // Check if a todo for this pain already exists
           const alreadyHasTodo = todos.some((t) => t.painTempId === np.tempId);
           if (!alreadyHasTodo) {
             addTodoForPain(np.tempId, np.description);
@@ -278,10 +284,10 @@ export default function MeetingDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center space-y-2">
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center space-y-3">
           <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Carregando reunião...</p>
+          <p className="text-sm text-muted-foreground">Carregando reuniao...</p>
         </div>
       </div>
     );
@@ -289,13 +295,19 @@ export default function MeetingDetailPage() {
 
   if (notFound || !meeting) {
     return (
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold">Reunião não encontrada</h1>
-        <p className="text-muted-foreground mt-2">
-          A reunião solicitada não existe ou foi removida.
-        </p>
-        <Button variant="outline" className="mt-4" onClick={() => router.push('/')}>
-          Voltar ao início
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+          <AlertTriangle className="h-6 w-6 text-primary" />
+        </div>
+        <div className="text-center space-y-1">
+          <h1 className="text-xl font-bold">Reuniao nao encontrada</h1>
+          <p className="text-sm text-muted-foreground">
+            A reuniao solicitada nao existe ou foi removida.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => router.push('/')} className="gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Voltar ao inicio
         </Button>
       </div>
     );
@@ -305,71 +317,86 @@ export default function MeetingDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 space-y-1">
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={handleTitleBlur}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-            }}
-            placeholder="Título da reunião..."
-            className="text-xl font-bold border-0 px-0 focus-visible:ring-0 focus-visible:border-0"
-          />
-          <p className="text-sm text-muted-foreground">{meetingDate}</p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <ExcelExport
-            todos={todos}
-            filename={`reuniao-${sanitizeFilename(title || 'sem-titulo')}-${meetingDate.replace(/\//g, '-')}`}
-            meetingDate={meeting.date}
-          />
-          <Dialog>
-            <DialogTrigger
-              render={
-                <Button variant="destructive" size="sm" />
-              }
-            >
-              Deletar
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Deletar reunião?</DialogTitle>
-                <DialogDescription>
-                  Esta ação é irreversível. Todos os dados desta reunião
-                  (transcrição, dores, soluções e to-dos) serão removidos.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose render={<Button variant="outline" />}>
-                  Cancelar
-                </DialogClose>
-                <Button
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={deleting}
-                >
-                  {deleting ? 'Deletando...' : 'Confirmar'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+      {/* Page header */}
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0 space-y-2">
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleTitleBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+              }}
+              placeholder="Titulo da reuniao..."
+              className="text-xl font-bold border-0 px-0 bg-transparent focus-visible:ring-0 focus-visible:border-0 h-auto"
+            />
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5" />
+                {meetingDate}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {pains.length} dor{pains.length !== 1 ? 'es' : ''}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <ListTodo className="h-3.5 w-3.5" />
+                {todos.length} to-do{todos.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <ExcelExport
+              todos={todos}
+              filename={`reuniao-${sanitizeFilename(title || 'sem-titulo')}-${meetingDate.replace(/\//g, '-')}`}
+              meetingDate={meeting.date}
+            />
+            <Dialog>
+              <DialogTrigger
+                render={
+                  <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" />
+                }
+              >
+                <Trash2 className="h-4 w-4" />
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Deletar reuniao?</DialogTitle>
+                  <DialogDescription>
+                    Esta acao e irreversivel. Todos os dados desta reuniao
+                    (transcricao, dores, solucoes e to-dos) serao removidos.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose render={<Button variant="outline" />}>
+                    Cancelar
+                  </DialogClose>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? 'Deletando...' : 'Confirmar'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
 
       {/* Transcription */}
       {meeting.transcription && (
-        <div className="space-y-2">
-          <h2 className="text-lg font-semibold">Transcrição</h2>
-          <TranscriptionView text={meeting.transcription} />
-        </div>
+        <TranscriptionView text={meeting.transcription} />
       )}
 
       {/* Pains & Solutions */}
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold">Dores e Soluções</h2>
+      <div className="space-y-3">
+        <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/70 flex items-center gap-2">
+          <AlertTriangle className="h-3.5 w-3.5" />
+          Dores e Solucoes ({pains.length})
+        </h2>
         <AnalysisView
           mode="detail"
           context={meeting.context}
@@ -379,8 +406,11 @@ export default function MeetingDetailPage() {
       </div>
 
       {/* Todos */}
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold">To-Dos</h2>
+      <div className="space-y-3">
+        <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/70 flex items-center gap-2">
+          <ListTodo className="h-3.5 w-3.5" />
+          To-Dos ({todos.length})
+        </h2>
         <TodoTable
           todos={todos}
           onUpdateTodo={updateTodo}

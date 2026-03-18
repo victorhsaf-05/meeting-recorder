@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { ExcelExport } from '@/components/ExcelExport';
 import { ExcelImport } from '@/components/ExcelImport';
 import { DashboardCounters } from '@/components/DashboardCounters';
 import { DashboardFilters } from '@/components/DashboardFilters';
-import { TodoTable } from '@/components/TodoTable';
+import { TodoCardList } from '@/components/TodoCard';
 import type { MeetingLink } from '@/components/TodoTable';
 import type { PainDetail } from '@/components/TodoTable';
 import type {
@@ -54,6 +55,7 @@ export default function DashboardPage() {
   const [painDetails, setPainDetails] = useState<Record<string, PainDetail>>({});
   const [costCenters, setCostCenters] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const fetchData = useCallback((f: DashboardFiltersState) => {
     const params = new URLSearchParams();
@@ -141,10 +143,16 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex gap-2">
+    <div className="space-y-8">
+      {/* Page header */}
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Visao geral de todos os to-dos das suas reunioes.
+          </p>
+        </div>
+        <div className="flex gap-2 shrink-0">
           <ExcelExport
             todos={todos}
             filename={`todos-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}`}
@@ -153,35 +161,60 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <DashboardCounters counters={counters} />
-
-      <DashboardFilters
-        filters={filters}
-        onChange={setFilters}
-        onApply={handleApply}
-        onClear={handleClear}
-        costCenters={costCenters}
+      {/* Counters */}
+      <DashboardCounters
+        counters={counters}
+        activeStatus={filters.status}
+        onStatusClick={(status) => {
+          const newFilters = { ...filters, status };
+          setFilters(newFilters);
+          setLoading(true);
+          fetchData(newFilters);
+        }}
       />
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center space-y-2">
-            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="text-sm text-muted-foreground">Carregando to-dos...</p>
+      {/* Filters section — collapsible */}
+      <div className="space-y-3">
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(!filtersOpen)}
+          className="flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-muted-foreground/70 hover:text-foreground transition-colors"
+        >
+          Filtros
+          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {filtersOpen && (
+          <DashboardFilters
+            filters={filters}
+            onChange={setFilters}
+            onApply={handleApply}
+            onClear={handleClear}
+            costCenters={costCenters}
+          />
+        )}
+      </div>
+
+      {/* Todos section */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/70">
+          To-Dos ({todos.length})
+        </h2>
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center space-y-3">
+              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p className="text-sm text-muted-foreground">Carregando to-dos...</p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <TodoTable
-          todos={todos}
-          onUpdateTodo={handleUpdateTodo}
-          onAddTodo={() => {}}
-          onRemoveTodo={() => {}}
-          readOnly={false}
-          meetingLinks={meetingLinks}
-          costCenters={costCenters}
-          painDetails={painDetails}
-        />
-      )}
+        ) : (
+          <TodoCardList
+            todos={todos}
+            onUpdateTodo={handleUpdateTodo}
+            meetingLinks={meetingLinks}
+            painDetails={painDetails}
+          />
+        )}
+      </div>
     </div>
   );
 }

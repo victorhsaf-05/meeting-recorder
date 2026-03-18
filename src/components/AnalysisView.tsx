@@ -2,8 +2,8 @@
 
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { AlertTriangle, Lightbulb, Plus, X, Trash2, MessageSquareText } from 'lucide-react';
 import type { EditablePain, EditableSolution } from '@/lib/types';
 
 interface AnalysisViewProps {
@@ -99,98 +99,116 @@ export function AnalysisView({
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center space-y-2">
-            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="text-sm text-muted-foreground">
-              Analisando transcrição com IA...
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="glass-card rounded-xl p-12 flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Analisando transcricao com IA...</p>
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-sm text-destructive">{error}</p>
-        </CardContent>
-      </Card>
+      <div className="glass-card rounded-xl p-5">
+        <p className="text-sm text-destructive">{error}</p>
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      {/* Context */}
       {context && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="mb-2 text-sm font-medium">Contexto da Reunião</h3>
-            <p className="text-sm text-muted-foreground">{context}</p>
-          </CardContent>
-        </Card>
+        <div className="glass-card rounded-xl p-4 space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <MessageSquareText className="h-4 w-4" />
+            Contexto da Reuniao
+          </div>
+          <p className="text-sm leading-relaxed">{context}</p>
+        </div>
       )}
 
-      {pains.map((pain, painIndex) => (
-        <Card key={pain.tempId}>
-          <CardContent className="space-y-3 pt-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Dor {painIndex + 1}</span>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => removePain(painIndex)}
-              >
-                Remover
-              </Button>
-            </div>
-            <Input
-              value={pain.description}
-              onChange={e =>
-                updatePain(painIndex, { description: e.target.value })
-              }
-              placeholder="Descrição do problema..."
-            />
-
-            <div className="ml-4 space-y-2">
-              <span className="text-xs font-medium text-muted-foreground">
-                Soluções
+      {/* Pains */}
+      <div className="space-y-3">
+        {pains.map((pain, painIndex) => (
+          <div key={pain.tempId} className="glass-card rounded-xl overflow-hidden">
+            {/* Pain header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-red-500/10">
+                <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+              </div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Dor {painIndex + 1}
               </span>
-              {pain.solutions.map((sol, solIndex) => (
-                <div key={sol.tempId} className="flex items-center gap-2">
-                  <Input
-                    value={sol.description}
-                    onChange={e =>
-                      updateSolution(painIndex, solIndex, e.target.value)
-                    }
-                    placeholder="Solução proposta..."
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeSolution(painIndex, solIndex)}
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addSolution(painIndex)}
-              >
-                + Solução
-              </Button>
+              <div className="ml-auto">
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => removePain(painIndex)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      ))}
 
-      <Button variant="outline" onClick={addPain}>
-        + Adicionar Dor
+            {/* Pain body */}
+            <div className="p-4 space-y-3">
+              <Input
+                value={pain.description}
+                onChange={e => updatePain(painIndex, { description: e.target.value })}
+                placeholder="Descricao do problema..."
+                className="bg-transparent border-border/50 focus:border-primary/30"
+              />
+
+              {/* Solutions */}
+              <div className="space-y-2 pl-4 border-l-2 border-emerald-500/20">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-3.5 w-3.5 text-emerald-400" />
+                  <span className="text-xs font-medium text-muted-foreground">Solucoes</span>
+                </div>
+                {pain.solutions.map((sol, solIndex) => (
+                  <div key={sol.tempId} className="flex items-center gap-2">
+                    <Input
+                      value={sol.description}
+                      onChange={e => updateSolution(painIndex, solIndex, e.target.value)}
+                      placeholder="Solucao proposta..."
+                      className="flex-1 bg-transparent border-border/50 focus:border-primary/30 h-8 text-sm"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => removeSolution(painIndex, solIndex)}
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addSolution(painIndex)}
+                  className="h-7 text-xs text-muted-foreground hover:text-primary gap-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  Solucao
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={addPain}
+        className="gap-1.5"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Adicionar Dor
       </Button>
     </div>
   );

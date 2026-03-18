@@ -7,17 +7,22 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/recording', label: 'Nova Gravação' },
+  { href: '/recording', label: 'Nova Gravacao' },
 ];
 
 export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="border-b bg-background">
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold">
-          MeetingRecorder AI
+        <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary text-sm font-bold">
+            M
+          </span>
+          <span>
+            Meeting<span className="text-primary">Recorder</span>
+          </span>
         </Link>
         <nav className="flex items-center gap-1">
           {navItems.map((item) => (
@@ -25,10 +30,10 @@ export function Header() {
               key={item.href}
               href={item.href}
               className={cn(
-                'inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                'inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200',
                 pathname === item.href
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-accent hover:text-accent-foreground'
+                  ? 'bg-primary/15 text-primary shadow-sm shadow-primary/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               )}
             >
               {item.label}
