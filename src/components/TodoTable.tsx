@@ -367,7 +367,7 @@ export function TodoTable({
       )}
 
       <Dialog open={!!detailTodo} onOpenChange={(open) => !open && setDetailTodo(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Detalhes do To-Do</DialogTitle>
           </DialogHeader>
@@ -375,7 +375,7 @@ export function TodoTable({
             <div className="space-y-4 text-sm">
               <div>
                 <span className="font-medium text-muted-foreground">Acao:</span>
-                <p>{detailTodo.action || '—'}</p>
+                <p className="break-words whitespace-pre-wrap mt-1">{detailTodo.action || '—'}</p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -390,7 +390,7 @@ export function TodoTable({
               {detailTodo.painTempId && painDetails?.[detailTodo.painTempId] && (
                 <div className="border-t pt-3 space-y-2">
                   <span className="font-medium text-muted-foreground">Dor relacionada:</span>
-                  <p>{painDetails[detailTodo.painTempId].description}</p>
+                  <p className="break-words whitespace-pre-wrap mt-1">{painDetails[detailTodo.painTempId].description}</p>
                   {painDetails[detailTodo.painTempId].solutions.length > 0 && (
                     <div>
                       <span className="font-medium text-muted-foreground">Solucoes:</span>
