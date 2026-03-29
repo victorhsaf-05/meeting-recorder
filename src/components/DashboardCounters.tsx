@@ -56,7 +56,7 @@ export function DashboardCounters({ counters, activeStatus, onStatusClick }: Das
             onClick={() => onStatusClick?.(isActive ? '' : item.status)}
           >
             <CardContent className="py-4">
-              <p className={`text-2xl font-bold ${item.textColor}`}>{counters[item.key]}</p>
+              <p className={`text-2xl font-bold font-mono tabular-nums ${item.textColor}`}>{counters[item.key]}</p>
               <p className="text-sm font-medium text-muted-foreground">{item.label}</p>
             </CardContent>
           </Card>

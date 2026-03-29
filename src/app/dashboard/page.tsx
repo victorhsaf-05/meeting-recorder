@@ -7,6 +7,7 @@ import { ExcelImport } from '@/components/ExcelImport';
 import { DashboardCounters } from '@/components/DashboardCounters';
 import { DashboardFilters } from '@/components/DashboardFilters';
 import { TodoCardList } from '@/components/TodoCard';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { MeetingLink } from '@/components/TodoTable';
 import type { PainDetail } from '@/components/TodoTable';
 import type {
@@ -145,7 +146,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Page header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between animate-fade-in">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
@@ -200,11 +201,17 @@ export default function DashboardPage() {
           To-Dos ({todos.length})
         </h2>
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="text-center space-y-3">
-              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <p className="text-sm text-muted-foreground">Carregando to-dos...</p>
-            </div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="glass-card rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-4 w-1/3" />
+                </div>
+                <Skeleton className="h-3 w-2/3" />
+                <Skeleton className="h-3 w-1/4" />
+              </div>
+            ))}
           </div>
         ) : (
           <TodoCardList

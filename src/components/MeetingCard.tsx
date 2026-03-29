@@ -20,7 +20,7 @@ export function MeetingCard({ meeting }: MeetingCardProps) {
       <div className="glass-card flex items-center gap-4 rounded-xl px-4 py-3.5 transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
         {/* Date badge */}
         <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <span className="text-lg font-bold leading-none">{day}</span>
+          <span className="text-lg font-bold leading-none font-mono">{day}</span>
           <span className="text-[10px] font-semibold uppercase tracking-wide">{month}</span>
         </div>
 

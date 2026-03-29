@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { PendenciaCard } from '@/components/PendenciaCard';
 import { PendenciaForm } from '@/components/PendenciaForm';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -121,7 +122,7 @@ export default function PendenciasPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between animate-fade-in">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">Pendencias</h1>
           <p className="text-sm text-muted-foreground">
@@ -135,7 +136,7 @@ export default function PendenciasPage() {
       </div>
 
       {/* Counters */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 stagger-children">
         {counterItems.map((item) => {
           const isActive = activeFilter === item.status;
           return (
@@ -145,7 +146,7 @@ export default function PendenciasPage() {
               onClick={() => handleFilterClick(item.status)}
             >
               <CardContent className="py-4">
-                <p className={`text-2xl font-bold ${item.textColor}`}>{counters[item.key]}</p>
+                <p className={`text-2xl font-bold font-mono tabular-nums ${item.textColor}`}>{counters[item.key]}</p>
                 <p className="text-sm font-medium text-muted-foreground">{item.label}</p>
               </CardContent>
             </Card>
@@ -159,14 +160,20 @@ export default function PendenciasPage() {
           {activeFilter || 'Todas'} ({pendencias.length})
         </h2>
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="text-center space-y-3">
-              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <p className="text-sm text-muted-foreground">Carregando pendencias...</p>
-            </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="glass-card rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-14" />
+                  <Skeleton className="h-5 w-20" />
+                </div>
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            ))}
           </div>
         ) : pendencias.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-3">
+          <div className="flex flex-col items-center justify-center py-16 space-y-3 animate-fade-in">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <ClipboardList className="h-5 w-5 text-primary" />
             </div>
@@ -176,7 +183,7 @@ export default function PendenciasPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 stagger-children">
             {pendencias.map((p) => (
               <PendenciaCard key={p.id} pendencia={p} onStatusChange={handleStatusChange} />
             ))}

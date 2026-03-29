@@ -5,6 +5,7 @@ import { Plus, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoutineCard } from '@/components/RoutineCard';
 import { RoutineForm } from '@/components/RoutineForm';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { RoutineWithStatus, CreateRoutineRequest } from '@/lib/types';
 
 export default function RotinasPage() {
@@ -46,7 +47,7 @@ export default function RotinasPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between animate-fade-in">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">Rotinas</h1>
           <p className="text-sm text-muted-foreground">
@@ -61,14 +62,20 @@ export default function RotinasPage() {
 
       {/* List */}
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <div className="text-center space-y-3">
-            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="text-sm text-muted-foreground">Carregando rotinas...</p>
-          </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="glass-card rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-5 w-14" />
+              </div>
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          ))}
         </div>
       ) : routines.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 space-y-3">
+        <div className="flex flex-col items-center justify-center py-16 space-y-3 animate-fade-in">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <ListChecks className="h-5 w-5 text-primary" />
           </div>
@@ -78,7 +85,7 @@ export default function RotinasPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 stagger-children">
           {routines.map((r) => (
             <RoutineCard key={r.id} routine={r} />
           ))}

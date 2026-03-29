@@ -20,7 +20,7 @@ export function RoutineCounters({ counters }: RoutineCountersProps) {
       {items.map((item) => (
         <Card key={item.key} className={`glass-card ${item.glowClass} transition-all duration-300 hover:scale-[1.02]`}>
           <CardContent className="py-4">
-            <p className={`text-2xl font-bold ${item.textColor}`}>{counters[item.key]}</p>
+            <p className={`text-2xl font-bold font-mono tabular-nums ${item.textColor}`}>{counters[item.key]}</p>
             <p className="text-sm font-medium text-muted-foreground">{item.label}</p>
           </CardContent>
         </Card>

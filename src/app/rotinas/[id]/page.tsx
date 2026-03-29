@@ -25,6 +25,7 @@ import {
   Link2,
   ChevronRight,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { addDays, isAfter, startOfDay } from 'date-fns';
 import type { RoutineWithStatus, RoutineStatus, RoutineFrequency, CreateRoutineRequest, RoutineExecutionItem } from '@/lib/types';
 
@@ -165,10 +166,24 @@ export default function RotinaDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center space-y-3">
-          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Carregando rotina...</p>
+      <div className="space-y-8">
+        <Skeleton className="h-4 w-16" />
+        <div className="glass-card rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-5 w-14" />
+          </div>
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-3 w-24" />
+          <div className="glass-card rounded-xl p-4 space-y-2">
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-4/5" />
+            <Skeleton className="h-3 w-3/5" />
+          </div>
         </div>
       </div>
     );
@@ -200,7 +215,7 @@ export default function RotinaDetailPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Back + actions */}
       <div className="flex items-center justify-between">
         <button
@@ -280,7 +295,7 @@ export default function RotinaDetailPage() {
                     <button
                       key={dep.id}
                       onClick={() => router.push(`/rotinas/${dep.dependency.id}`)}
-                      className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                      className="flex items-center gap-2 text-sm text-violet-400 hover:text-violet-300 transition-colors"
                     >
                       <Link2 className="h-3.5 w-3.5" />
                       {dep.dependency.title}
@@ -337,7 +352,7 @@ export default function RotinaDetailPage() {
               <div key={exec.id} className="glass-card rounded-xl px-4 py-3 flex items-start gap-3">
                 <Clock className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{formatDate(exec.executedAt)}</p>
+                  <p className="text-sm font-medium font-mono tabular-nums">{formatDate(exec.executedAt)}</p>
                   {exec.notes && <p className="text-xs text-muted-foreground mt-1">{exec.notes}</p>}
                 </div>
               </div>

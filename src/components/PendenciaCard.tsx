@@ -66,12 +66,12 @@ export function PendenciaCard({ pendencia, onStatusChange }: PendenciaCardProps)
         {pendencia.deadline && (
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            Prazo: {formatDate(pendencia.deadline)}
+            Prazo: <span className="font-mono tabular-nums">{formatDate(pendencia.deadline)}</span>
           </span>
         )}
         <span className="flex items-center gap-1">
           <Calendar className="h-3 w-3" />
-          {formatDate(pendencia.createdAt)}
+          <span className="font-mono tabular-nums">{formatDate(pendencia.createdAt)}</span>
         </span>
       </div>
     </div>

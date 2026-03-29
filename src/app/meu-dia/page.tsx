@@ -6,6 +6,7 @@ import { RoutineCounters } from '@/components/RoutineCounters';
 import { RoutineDayCard } from '@/components/RoutineDayCard';
 import { PendenciaCard } from '@/components/PendenciaCard';
 import { ExecuteDialog } from '@/components/ExecuteDialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { RoutineWithStatus, PendenciaItem, PendenciaStatus, MeuDiaCounters } from '@/lib/types';
 
 const emptyCounters: MeuDiaCounters = {
@@ -79,7 +80,7 @@ export default function MeuDiaPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-1">
+      <div className="space-y-1 animate-fade-in">
         <h1 className="text-2xl font-bold tracking-tight">Meu Dia</h1>
         <p className="text-sm text-muted-foreground capitalize">{today}</p>
       </div>
@@ -93,21 +94,28 @@ export default function MeuDiaPage() {
           Rotinas do Dia ({routines.length})
         </h2>
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="text-center space-y-3">
-              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <p className="text-sm text-muted-foreground">Carregando...</p>
-            </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="glass-card rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-14" />
+                </div>
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+            ))}
           </div>
         ) : routines.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-3">
+          <div className="flex flex-col items-center justify-center py-16 space-y-3 animate-fade-in">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
               <CalendarCheck className="h-5 w-5 text-emerald-400" />
             </div>
             <p className="text-sm text-muted-foreground">Tudo em dia! Nenhuma rotina pendente.</p>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 stagger-children">
             {routines.map((r) => (
               <RoutineDayCard key={r.id} routine={r} onExecute={setExecuteRoutine} />
             ))}
@@ -121,11 +129,11 @@ export default function MeuDiaPage() {
           Pendencias ({pendencias.length})
         </h2>
         {!loading && pendencias.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 space-y-3">
+          <div className="flex flex-col items-center justify-center py-12 space-y-3 animate-fade-in">
             <p className="text-sm text-muted-foreground">Nenhuma pendencia ativa.</p>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 stagger-children">
             {pendencias.map((p) => (
               <PendenciaCard key={p.id} pendencia={p} onStatusChange={handleUpdatePendencia} />
             ))}

@@ -29,8 +29,10 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <Sidebar />
-        <main className="lg:pl-56 min-h-screen">
-          <div className="mx-auto max-w-6xl px-6 py-8 pt-16 lg:pt-8">
+        <main className="lg:pl-56 min-h-screen relative">
+          {/* Hero gradient atmosphere */}
+          <div className="gradient-hero pointer-events-none fixed inset-x-0 top-0 h-[500px] lg:left-56 z-0" />
+          <div className="relative z-10 mx-auto max-w-6xl px-6 py-8 pt-16 lg:pt-8">
             {children}
           </div>
         </main>

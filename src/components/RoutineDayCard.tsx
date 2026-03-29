@@ -56,7 +56,7 @@ export function RoutineDayCard({ routine, onExecute }: RoutineDayCardProps) {
         )}
         <span className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          {formatDate(routine.lastExecution)}
+          <span className="font-mono tabular-nums">{formatDate(routine.lastExecution)}</span>
         </span>
       </div>
 
