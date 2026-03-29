@@ -139,3 +139,100 @@ export interface DashboardCounters {
   concluido: number;
   cancelado: number;
 }
+
+// ── Rotinas ──
+
+export type RoutineFrequency = 'daily' | 'weekly' | 'monthly' | 'custom';
+
+export type RoutineStatus = 'OK' | 'Pendente' | 'Atrasada' | 'Desatualizada';
+
+export interface RoutineStepItem {
+  id: string;
+  order: number;
+  content: string;
+}
+
+export interface RoutineExecutionItem {
+  id: string;
+  executedAt: string;
+  notes: string | null;
+}
+
+export interface RoutineDependencyItem {
+  id: string;
+  dependencyId: string;
+  dependency: {
+    id: string;
+    title: string;
+  };
+}
+
+export interface RoutineListItem {
+  id: string;
+  title: string;
+  description: string | null;
+  filePath: string | null;
+  frequency: RoutineFrequency;
+  customDays: number | null;
+  observation: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  steps: RoutineStepItem[];
+  executions: RoutineExecutionItem[];
+  dependsOn: RoutineDependencyItem[];
+}
+
+export interface RoutineWithStatus extends RoutineListItem {
+  status: RoutineStatus;
+  lastExecution: string | null;
+  nextDue: string | null;
+}
+
+export interface CreateRoutineRequest {
+  title: string;
+  description?: string;
+  filePath?: string;
+  frequency: RoutineFrequency;
+  customDays?: number;
+  observation?: string;
+  steps?: { order: number; content: string }[];
+  dependencyIds?: string[];
+}
+
+// ── Pendências ──
+
+export type PendenciaPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export type PendenciaStatus = 'Pendente' | 'Em andamento' | 'Concluida' | 'Arquivada';
+
+export interface PendenciaItem {
+  id: string;
+  title: string;
+  description: string | null;
+  priority: PendenciaPriority;
+  status: PendenciaStatus;
+  deadline: string | null;
+  observation: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePendenciaRequest {
+  title: string;
+  description?: string;
+  priority?: PendenciaPriority;
+  deadline?: string;
+  observation?: string;
+}
+
+// ── Meu Dia ──
+
+export interface MeuDiaCounters {
+  totalRotinas: number;
+  concluidasHoje: number;
+  atrasadas: number;
+  desatualizadas: number;
+  pendenciasPendentes: number;
+  pendenciasAndamento: number;
+}

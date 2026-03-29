@@ -22,6 +22,7 @@ N/A — Projeto greenfield. Sera criado com `create-next-app` usando App Router 
 | 15/03/2026 | 1.0 | Versao inicial da arquitetura | Aria (Architect) |
 | 15/03/2026 | 1.1 | Double check: fix counters dashboard (groupBy sem filtro status), import API com auto-criacao participantes, audioPath removido do schema, ParticipantSelector cria imediatamente, busca transcricao documentada | Aria (Architect) |
 | 15/03/2026 | 1.2 | Double check 2: onDelete Cascade em MeetingParticipant→Participant, chunk filename preserva extensao original, GET /api/meetings documenta _count de todos | Aria (Architect) |
+| 29/03/2026 | 1.3 | Referencia ao addendum de Rotinas & Pendencias (Epic 6). Ver [architecture-rotinas-pendencias.md](./architecture-rotinas-pendencias.md) | Aria (Architect) |
 
 ---
 

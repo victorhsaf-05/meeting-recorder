@@ -82,3 +82,68 @@ model Todo {
   @@index([costCenter])
   @@index([meetingDate])
 }
+
+model Routine {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  filePath    String?
+  frequency   String   @default("daily")
+  customDays  Int?
+  observation String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  steps       RoutineStep[]
+  executions  RoutineExecution[]
+  dependsOn   RoutineDependency[] @relation("dependent")
+  dependedBy  RoutineDependency[] @relation("dependency")
+
+  @@index([active])
+}
+
+model RoutineStep {
+  id        String  @id @default(cuid())
+  routineId String
+  routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  order     Int
+  content   String
+
+  @@index([routineId])
+}
+
+model RoutineExecution {
+  id         String   @id @default(cuid())
+  routineId  String
+  routine    Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  executedAt DateTime @default(now())
+  notes      String?
+
+  @@index([routineId])
+  @@index([executedAt])
+}
+
+model RoutineDependency {
+  id           String  @id @default(cuid())
+  dependentId  String
+  dependent    Routine @relation("dependent", fields: [dependentId], references: [id], onDelete: Cascade)
+  dependencyId String
+  dependency   Routine @relation("dependency", fields: [dependencyId], references: [id], onDelete: Cascade)
+
+  @@unique([dependentId, dependencyId])
+}
+
+model Pendencia {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  priority    String    @default("medium")
+  status      String    @default("Pendente")
+  deadline    DateTime?
+  observation String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([priority])
+}

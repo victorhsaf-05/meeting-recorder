@@ -186,6 +186,9 @@ APIs de persistencia, tabela de to-do editavel, fluxo wizard da gravacao, pagina
 ### Epic 5: Dashboard e Excel
 Dashboard consolidado com filtros backend e contadores, exportacao e importacao de Excel.
 
+### Epic 6: Rotinas & Pendencias
+Sistema de gestao de rotinas de trabalho com historico de execucoes, dependencias, status computado, e pendencias avulsas. Dashboard "Meu Dia" para visao diaria. Ver [PRD Addendum](./prd-rotinas-pendencias.md).
+
 ---
 
 ## 6. Epic Details
